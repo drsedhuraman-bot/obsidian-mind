@@ -1,4 +1,8 @@
-# Obsidian Mind
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Obsidian Mind
 
 Personal Obsidian vault -- an external brain for work notes, decisions, performance tracking, and Claude context.
 
@@ -342,6 +346,44 @@ Five lifecycle hooks in `.claude/settings.json`:
 | PostToolUse | After writing `.md` | Validates frontmatter, checks for wikilinks |
 | PreCompact | Before context compaction | Backs up session transcript to `thinking/session-logs/` |
 | Stop | End of every session | Lightweight checklist reminder: archive, update indexes, check orphans. For thorough review, use `/om-wrap-up` instead. |
+
+## Hook Script Development
+
+Hook scripts live in `.claude/scripts/` and run via Node's `--experimental-strip-types` flag (no build step). The `lib/` subdirectory contains pure helper modules that are unit-tested independently of the hook entry points. See `ARCHITECTURE.md` for the full system design.
+
+**One-time QMD bootstrap** (run after cloning or changing `qmd_index` in `vault-manifest.json`):
+
+```bash
+node --experimental-strip-types scripts/qmd-bootstrap.ts
+```
+
+**Run all hook script tests** (from repo root):
+
+```bash
+cd .claude/scripts && node --experimental-strip-types --test
+```
+
+**Run a single test file**:
+
+```bash
+cd .claude/scripts && node --experimental-strip-types --test tests/session-start.test.ts
+```
+
+**Typecheck hook scripts**:
+
+```bash
+cd .claude/scripts && npx tsc --noEmit
+```
+
+**QMD index maintenance** (after bulk note edits):
+
+```bash
+qmd --index obsidian-mind update   # incremental re-index
+qmd --index obsidian-mind embed    # rebuild embeddings (downloads ~328MB model on first run)
+qmd --index obsidian-mind query "your query"
+```
+
+The index name `obsidian-mind` comes from `qmd_index` in `vault-manifest.json`. Change it there before re-bootstrapping to isolate this vault from other QMD-indexed vaults on the same machine.
 
 ## Rules
 
